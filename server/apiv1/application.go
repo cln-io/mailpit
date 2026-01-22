@@ -71,6 +71,7 @@ func WebUIConfig(w http.ResponseWriter, _ *http.Request) {
 	conf.Body.ChaosEnabled = chaos.Enabled
 	conf.Body.DuplicatesIgnored = config.IgnoreDuplicateIDs
 	conf.Body.HideDeleteAllButton = config.HideDeleteAllButton
+	conf.Body.RemoteImagesToggle = config.RemoteImagesToggle
 
 	w.Header().Add("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(conf.Body); err != nil {

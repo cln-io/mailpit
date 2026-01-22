@@ -95,6 +95,9 @@ type webUIConfigurationResponse struct {
 
 		// Whether the delete button should be hidden
 		HideDeleteAllButton bool
+
+		// Whether the remote images toggle is enabled
+		RemoteImagesToggle bool
 	}
 }
 

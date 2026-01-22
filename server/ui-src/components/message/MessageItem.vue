@@ -57,6 +57,7 @@ export default {
 				tablet: "width: 768px; height: 1024px",
 				display: "width: 100%; height: 100%",
 			},
+			showRemoteImages: false,
 		};
 	},
 
@@ -132,6 +133,10 @@ export default {
 					this.resizeIFrames();
 				}, 500);
 			}
+		},
+
+		showRemoteImages(show) {
+			this.toggleRemoteImages(show);
 		},
 	},
 
@@ -286,6 +291,38 @@ export default {
 				window.scrollInPlace = true;
 				this.$emit("loadMessages");
 			});
+		},
+
+		// Toggle remote images visibility in the HTML preview iframe
+		toggleRemoteImages(show) {
+			const iframe = document.getElementById("preview-html");
+			if (!iframe || !iframe.contentWindow || !iframe.contentWindow.document) {
+				return;
+			}
+
+			const images = iframe.contentWindow.document.querySelectorAll("img[data-original-source]");
+			images.forEach((img) => {
+				const originalSrc = img.getAttribute("data-original-source");
+				const currentSrc = img.getAttribute("src");
+
+				if (show && originalSrc) {
+					// Show remote images: move data-original-source to src
+					img.setAttribute("src", originalSrc);
+					img.setAttribute("data-original-source", "");
+				} else if (!show && currentSrc) {
+					// Hide remote images: move src back to data-original-source
+					const srcLower = currentSrc.toLowerCase();
+					if (srcLower.startsWith("http://") || srcLower.startsWith("https://")) {
+						img.setAttribute("data-original-source", currentSrc);
+						img.setAttribute("src", "");
+					}
+				}
+			});
+
+			// Resize iframe after images load/unload
+			window.setTimeout(() => {
+				this.resizeIFrames();
+			}, 500);
 		},
 
 		// Convert plain text to HTML including anchor links
@@ -771,6 +808,18 @@ export default {
 				aria-labelledby="nav-html-tab"
 				tabindex="0"
 			>
+				<div v-if="mailbox.uiConfig.RemoteImagesToggle" class="mb-2">
+					<div class="form-check form-switch">
+						<input
+							id="remoteImagesToggle"
+							v-model="showRemoteImages"
+							class="form-check-input"
+							type="checkbox"
+							role="switch"
+						/>
+						<label class="form-check-label" for="remoteImagesToggle">Show remote images</label>
+					</div>
+				</div>
 				<div id="responsive-view" :class="scaleHTMLPreview" :style="responsiveSizes[scaleHTMLPreview]">
 					<iframe
 						id="preview-html"

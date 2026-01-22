@@ -1,7 +1,9 @@
 package tools
 
 import (
+	"bytes"
 	"fmt"
+	"strings"
 
 	"golang.org/x/net/html"
 )
@@ -47,4 +49,38 @@ func WalkHTML(n *html.Node, fn func(*html.Node)) {
 	for c := n.FirstChild; c != nil; c = c.NextSibling {
 		WalkHTML(c, fn)
 	}
+}
+
+// isRemoteURL checks if a URL is a remote URL (http:// or https://)
+func isRemoteURL(url string) bool {
+	url = strings.TrimSpace(strings.ToLower(url))
+	return strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")
+}
+
+// DisableRemoteImages processes HTML to move remote image src attributes
+// to data-original-source and empty the src, preventing remote images from loading
+func DisableRemoteImages(htmlContent string) (string, error) {
+	doc, err := html.Parse(strings.NewReader(htmlContent))
+	if err != nil {
+		return htmlContent, err
+	}
+
+	WalkHTML(doc, func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "img" {
+			src, srcErr := GetHTMLAttributeVal(n, "src")
+			if srcErr == nil && isRemoteURL(src) {
+				// Move src to data-original-source
+				SetHTMLAttributeVal(n, "data-original-source", src)
+				// Clear the src
+				SetHTMLAttributeVal(n, "src", "")
+			}
+		}
+	})
+
+	var buf bytes.Buffer
+	if err := html.Render(&buf, doc); err != nil {
+		return htmlContent, err
+	}
+
+	return buf.String(), nil
 }

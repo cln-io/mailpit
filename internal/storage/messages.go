@@ -367,6 +367,11 @@ func GetMessage(id string) (*Message, error) {
 		Username:   meta.Username,
 	}
 	obj.HTML = env.HTML
+	if (config.BlockRemoteImages || config.RemoteImagesToggle) && obj.HTML != "" {
+		if processedHTML, err := tools.DisableRemoteImages(obj.HTML); err == nil {
+			obj.HTML = processedHTML
+		}
+	}
 	obj.Inline = []Attachment{}
 	obj.Attachments = []Attachment{}
 

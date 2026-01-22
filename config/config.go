@@ -127,6 +127,12 @@ var (
 	// BlockRemoteCSSAndFonts used to disable remote CSS & fonts
 	BlockRemoteCSSAndFonts = false
 
+	// BlockRemoteImages blocks all remote images in HTML
+	BlockRemoteImages = false
+
+	// RemoteImagesToggle enables the toggle to show/hide remote images in HTML
+	RemoteImagesToggle = false
+
 	// CLITagsArg is used to map the CLI args
 	CLITagsArg string
 
